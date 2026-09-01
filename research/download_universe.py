@@ -18,7 +18,7 @@ REST = "https://fapi.asterdex.com/fapi/v1"
 DATA = Path(__file__).parent / "data"
 MIN_QVOL = 2_000_000
 DAYS = 21
-WORKERS = 6
+WORKERS = 3
 
 
 def main():

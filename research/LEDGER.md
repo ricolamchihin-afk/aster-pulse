@@ -67,6 +67,19 @@ Return definitions (executable, trade-price proxy for bid/ask):
 where entry/exit are modelled from trade prices with spread applied so entry is
 worse and exit is worse by the modelled half-spread on each side.
 
+## 2b. Measured live spread (recorder, ~10+ min sample, 549 symbols)
+
+- BTCUSDT p50 0.01bp, ETHUSDT 0.04bp, SOLUSDT 0.99bp, XRPUSDT 0.73bp,
+  DOGEUSDT 1.22bp, ASTERUSDT 1.44bp, BNBUSDT 0.88bp.
+- Cross-symbol median of per-symbol p50 spread = 19.4bp (illiquid tail up to
+  738bp). Top-of-book depth is thin (BTC ~$6k, many names <$1k).
+- **Consequence:** for the liquid universe the 8bp round-trip taker fee
+  dominates; total modelled `cost_rt` ≈ 8–11bp. Break-even therefore needs a
+  net directional edge > ~8–11bp per round trip. Required gross edge is well
+  under the "implausible" 15–20bp screen for the most liquid names, so the
+  study is worth running — but the edge must clear the fee floor after the
+  bid-ask bounce that trade-price entries reintroduce.
+
 ## 3. Trials log
 
 (Appended as variants are run. Each entry: id, description, params, purpose.)
