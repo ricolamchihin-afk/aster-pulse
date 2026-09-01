@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="en" data-palette="#22C55E,#EF4444,#94A3B8">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aster Pulse</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Fira+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#020617; --card:#0E1223; --muted:#1A1E2F; --border:#334155;
+  --fg:#F8FAFC; --muted-fg:#94A3B8; --up:#22C55E; --down:#EF4444;
+  --wait:#F59E0B; --ring:#F8FAFC;
+  --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:24px; --s6:32px;
+  --mono:'Fira Code',ui-monospace,'Cascadia Mono',Consolas,monospace;
+  --sans:'Fira Sans',ui-sans-serif,system-ui,'Segoe UI',sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg); color:var(--fg); font-family:var(--sans); font-size:14px;
+  line-height:1.5; -webkit-font-smoothing:antialiased}
+.sr{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;
+  clip:rect(0 0 0 0);white-space:nowrap;border:0}
+:focus-visible{outline:2px solid var(--ring);outline-offset:2px;border-radius:3px}
+
+header{display:flex; flex-wrap:wrap; gap:var(--s4); align-items:center;
+  padding:var(--s3) var(--s5); border-bottom:1px solid var(--border);
+  background:var(--card); position:sticky; top:0; z-index:10}
+h1{font-family:var(--mono); font-size:15px; font-weight:600; margin:0;
+  letter-spacing:.08em; text-shadow:0 0 10px rgba(34,197,94,.25)}
+h1 .dim{color:var(--muted-fg); font-weight:400}
+.stats{display:flex; gap:var(--s4); flex-wrap:wrap; margin-left:auto;
+  font-family:var(--mono); font-size:12px; color:var(--muted-fg)}
+.stats b{color:var(--fg); font-weight:500; font-variant-numeric:tabular-nums}
+.conn{display:inline-flex; align-items:center; gap:var(--s2); font-family:var(--mono);
+  font-size:12px; color:var(--muted-fg)}
+.dot{width:8px; height:8px; border-radius:50%; background:var(--muted-fg); flex:none}
+.conn.on .dot{background:var(--up); box-shadow:0 0 8px var(--up)}
+.conn.off .dot{background:var(--down)}
+.controls{display:flex; gap:var(--s2); align-items:center}
+button,label.toggle{font-family:var(--mono); font-size:12px; color:var(--fg);
+  cursor:pointer; background:var(--muted); border:1px solid var(--border);
+  border-radius:4px; padding:6px var(--s3); min-height:32px; display:inline-flex;
+  align-items:center; gap:var(--s2); transition:background .15s ease,border-color .15s ease}
+button:hover,label.toggle:hover{background:#232838; border-color:#475569}
+button[aria-pressed="true"]{border-color:var(--up); color:var(--up)}
+label.toggle input{accent-color:var(--up); width:14px; height:14px; cursor:pointer}
+
+main{display:grid; grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);
+  gap:var(--s4); padding:var(--s4) var(--s5) var(--s6)}
+@media (max-width:1100px){
+  main{grid-template-columns:minmax(0,1fr); padding:var(--s3)}
+  button,label.toggle{min-height:44px}
+  label.toggle input{width:18px; height:18px}
+}
+section{background:var(--card); border:1px solid var(--border); border-radius:6px;
+  overflow:hidden; min-width:0}
+.head{display:flex; align-items:baseline; gap:var(--s3); padding:var(--s3) var(--s4);
+  border-bottom:1px solid var(--border)}
+h2{font-family:var(--mono); font-size:12px; font-weight:600; margin:0;
+  letter-spacing:.1em; text-transform:uppercase}
+.head .note{font-size:12px; color:var(--muted-fg); margin-left:auto; text-align:right}
+
+.scroll{overflow-x:auto; max-height:72vh; overflow-y:auto}
+table{width:100%; border-collapse:collapse; font-family:var(--mono); font-size:12.5px}
+caption{text-align:left}
+th{position:sticky; top:0; background:var(--muted); color:var(--muted-fg);
+  font-weight:500; text-align:right; padding:var(--s2) var(--s3); white-space:nowrap;
+  border-bottom:1px solid var(--border); font-size:11px; letter-spacing:.05em}
+th:first-child,td:first-child{text-align:left}
+th.l,td.l{text-align:left}
+td{padding:var(--s2) var(--s3); text-align:right; white-space:nowrap;
+  border-bottom:1px solid rgba(51,65,85,.4); font-variant-numeric:tabular-nums}
+tbody tr:hover{background:rgba(26,30,47,.7)}
+tr.pinned td{background:rgba(245,158,11,.07)}
+tr.pinned td:first-child{box-shadow:inset 3px 0 0 var(--wait)}
+.sym{color:var(--fg); font-weight:500; max-width:15ch; overflow:hidden;
+  text-overflow:ellipsis; display:inline-block; vertical-align:bottom}
+.up{color:var(--up)} .down{color:var(--down)}
+.dim{color:var(--muted-fg)}
+.tag{font-size:10px; letter-spacing:.06em; padding:1px 5px; border-radius:3px;
+  border:1px solid var(--border); color:var(--muted-fg); margin-left:var(--s2)}
+.side{font-size:10.5px; letter-spacing:.08em; padding:2px 6px; border-radius:3px;
+  border:1px solid var(--wait); color:var(--wait); font-weight:600}
+.reason{color:var(--muted-fg); font-size:11px; margin-left:var(--s2)}
+.empty{padding:var(--s6) var(--s4); color:var(--muted-fg); text-align:center;
+  font-size:13px; line-height:1.7}
+svg.spark{display:block; width:72px; height:22px}
+.legend{padding:var(--s2) var(--s4); border-top:1px solid var(--border);
+  color:var(--muted-fg); font-size:11.5px; background:rgba(26,30,47,.4)}
+@keyframes flash{from{background:rgba(245,158,11,.16)} to{background:transparent}}
+tr.new{animation:flash 1.2s ease-out}
+@media (prefers-reduced-motion:reduce){
+  tr.new{animation:none}
+  *{transition-duration:.01ms !important}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>ASTER&nbsp;PULSE <span class="dim">/ abnormal move scanner</span></h1>
+  <div class="stats">
+    <span class="conn off" id="conn"><span class="dot"></span><span id="connText">connecting</span></span>
+    <span title="symbols with enough baseline to score"><b id="based">0</b>/<b id="tracked">0</b> scoring</span>
+    <span>seeded <b id="seeded">0</b></span>
+    <span>up <b id="up">0:00</b></span>
+  </div>
+  <div class="controls">
+    <label class="toggle"><input type="checkbox" id="hideThin"> hide THIN</label>
+    <button id="pause" aria-pressed="false">Pause</button>
+  </div>
+  <p class="sr" role="status" aria-atomic="true" id="status">Connecting to the scanner.</p>
+</header>
+
+<main>
+  <section aria-labelledby="h-alerts">
+    <div class="head">
+      <h2 id="h-alerts">Radar</h2>
+      <span class="note">idio move &ge;0.5% &middot; |z| &ge;4 vs 2h MAD baseline &middot; executable</span>
+    </div>
+    <div class="scroll">
+      <table>
+        <caption class="sr">Anomalies that passed every gate, newest first.</caption>
+        <thead><tr>
+          <th class="l" scope="col">Time</th><th class="l" scope="col">Symbol</th>
+          <th class="l" scope="col">Side</th>
+          <th scope="col">Move&nbsp;30s</th><th scope="col">Idio</th>
+          <th scope="col">z</th><th scope="col">Funding</th>
+        </tr></thead>
+        <tbody id="alerts"></tbody>
+      </table>
+      <p class="empty" id="alertsEmpty">Building the baseline.<br>
+        A symbol needs 40 non-overlapping 30&#8209;second returns &mdash; about
+        20&nbsp;minutes &mdash; before it can be scored at all.</p>
+    </div>
+    <p class="legend"><span class="side">WAIT</span> on every row is deliberate:
+      continuation vs reversal after an anomaly has not been tested on Aster data,
+      so no side is asserted. See <code>direction()</code>.</p>
+  </section>
+
+  <section aria-labelledby="h-movers">
+    <div class="head">
+      <h2 id="h-movers">Watchlist</h2>
+      <span class="note">flagged &amp; undecided pinned top, then largest 30s moves</span>
+    </div>
+    <div class="scroll">
+      <table>
+        <caption class="sr">Flagged symbols awaiting a direction decision, pinned above the largest movers.</caption>
+        <thead><tr>
+          <th class="l" scope="col">Symbol</th><th class="l" scope="col">60s</th>
+          <th scope="col">Move&nbsp;30s</th><th scope="col">z</th>
+          <th scope="col">Funding</th><th scope="col">OI</th>
+        </tr></thead>
+        <tbody id="movers"></tbody>
+      </table>
+      <p class="empty" id="moversEmpty">Warming up &mdash; no symbol has a usable baseline yet.</p>
+    </div>
+  </section>
+</main>
+
+<script>
+const $ = id => document.getElementById(id);
+const num = new Intl.NumberFormat(undefined, {notation:'compact', maximumFractionDigits:1});
+const seen = new Set();
+let paused = false, hideThin = false, lastSnap = null, lastAnnounced = -1;
+
+const pct = v => (v * 100).toFixed(2);
+const dir = v => v > 0 ? 'up' : 'down';
+const esc = s => s.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* Direction is carried by a word for screen readers and by the signed number on
+   screen; colour only reinforces it. Green/red alone fails deuteranopia. */
+function moveCell(v, kind){
+  const t = kind === ' idio' ? ' title="move minus beta times the BTC move"' : '';
+  return `<td class="${dir(v)}"${t}><span class="sr">${dir(v)} </span>` +
+         `<span aria-hidden="true">${v > 0 ? '▲' : '▼'}</span> ${pct(v)}%</td>`;
+}
+function sparkSvg(pts, v){
+  const d = pts.map((y, i) => `${(i / (pts.length - 1) * 100).toFixed(1)},${(23 - y * 0.21).toFixed(1)}`).join(' ');
+  return `<svg class="spark" viewBox="0 0 100 24" preserveAspectRatio="none" aria-hidden="true">` +
+         `<polyline points="${d}" fill="none" stroke="var(--${dir(v)})" stroke-width="1.5"` +
+         ` vector-effect="non-scaling-stroke" stroke-linejoin="round"/></svg>`;
+}
+
+/* q == 0 means the symbol was absent from the 24h REST snapshot - unknown, not zero. */
+const NOVOL = 'not in the 24h ticker snapshot';
+const thinTag = r => r.q === 0 ? `<span class="tag" title="${NOVOL}">NO VOL</span>`
+                   : r.thin ? '<span class="tag">THIN</span>' : '';
+const qCell = r => r.q === 0 ? `<td class="dim" title="${NOVOL}">&mdash;</td>`
+                             : `<td class="dim">$${num.format(r.q)}</td>`;
+
+/* Funding is a rate per interval; show it in basis points with the sign, and put the
+   time to the next payment in the tooltip. Positive = longs pay shorts. */
+function fundCell(r){
+  const bp = r.fr * 1e4, mins = r.ft ? Math.max(0, Math.round((r.ft - Date.now()) / 60000)) : 0;
+  const nxt = mins ? `next in ${Math.floor(mins / 60)}h${String(mins % 60).padStart(2,'0')}m` : 'next unknown';
+  const who = bp > 0 ? 'longs pay shorts' : bp < 0 ? 'shorts pay longs' : 'flat';
+  return `<td class="dim" title="${nxt} · ${who}">${bp >= 0 ? '+' : ''}${bp.toFixed(2)}bp</td>`;
+}
+const oiCell = r => r.oi == null
+  ? '<td class="dim" title="not polled yet — open interest has no bulk endpoint">&mdash;</td>'
+  : `<td class="dim">${num.format(r.oi)}</td>`;
+const sideCell = r =>
+  `<td class="l"><span class="side">${r.side}</span>` +
+  `<span class="reason">${esc(r.reason)}</span></td>`;
+
+const symCell = r => {
+  const v = r.q === 0 ? NOVOL : `24h volume $${num.format(r.q)}`;
+  return `<td class="l"><span class="sym" title="${esc(r.s)} · ${v}">${esc(r.s)}</span>${thinTag(r)}</td>`;
+};
+
+function alertRow(r){
+  return `<td class="l dim">${r.ts}</td>` + symCell(r) + sideCell(r) +
+         moveCell(r.move) + moveCell(r.resid, ' idio') + `<td>${r.z.toFixed(1)}</td>` +
+         fundCell(r);
+}
+function moverRow(r){
+  return symCell(r) + `<td class="l">${sparkSvg(r.spark, r.move)}</td>` +
+         moveCell(r.move) + `<td class="dim">${r.z.toFixed(1)}</td>` +
+         fundCell(r) + oiCell(r);
+}
+
+function render(d){
+  $('based').textContent = d.based;
+  $('tracked').textContent = d.tracked;
+  $('seeded').textContent = d.seeded;
+  $('up').textContent = Math.floor(d.up / 60) + ':' + String(d.up % 60).padStart(2, '0');
+
+  const movers = d.movers.filter(r => !hideThin || !r.thin);
+  $('movers').innerHTML = movers
+    .map(r => `<tr class="${r.fired ? 'pinned' : ''}">${moverRow(r)}</tr>`).join('');
+  $('moversEmpty').hidden = movers.length > 0;
+
+  // Alerts are append-only: prepend what's new so existing rows keep selection.
+  const body = $('alerts'), fresh = [];
+  for (const r of d.alerts.filter(r => !hideThin || !r.thin)){
+    const key = r.ts + r.s;
+    if (!seen.has(key)){ seen.add(key); fresh.push(r); }
+  }
+  for (const r of fresh.reverse()){
+    const tr = document.createElement('tr');
+    tr.className = 'new';
+    tr.innerHTML = alertRow(r);
+    body.prepend(tr);
+  }
+  while (body.rows.length > 60) body.deleteRow(-1);
+  $('alertsEmpty').hidden = body.rows.length > 0;
+
+  // One contextual phrase, not a bare number, and only when the count changes.
+  if (seen.size !== lastAnnounced){
+    lastAnnounced = seen.size;
+    $('status').textContent =
+      `${seen.size} anomalies flagged, all awaiting a direction decision. ` +
+      `${d.based} of ${d.tracked} symbols have a usable baseline.`;
+  }
+}
+
+function conn(on, text){
+  $('conn').className = 'conn ' + (on ? 'on' : 'off');
+  $('connText').textContent = text;
+}
+
+$('pause').addEventListener('click', e => {
+  paused = !paused;
+  e.target.setAttribute('aria-pressed', paused);
+  e.target.textContent = paused ? 'Resume' : 'Pause';
+  if (!paused && lastSnap) render(lastSnap);
+});
+$('hideThin').addEventListener('change', e => {
+  hideThin = e.target.checked;
+  seen.clear();
+  $('alerts').innerHTML = '';
+  if (lastSnap) render(lastSnap);
+});
+
+const es = new EventSource('/events');
+es.onopen = () => conn(true, 'live');
+es.onerror = () => conn(false, 'reconnecting');
+es.onmessage = e => {
+  lastSnap = JSON.parse(e.data);
+  conn(true, 'live');
+  if (!paused) render(lastSnap);
+};
+</script>
+</body>
+</html>
