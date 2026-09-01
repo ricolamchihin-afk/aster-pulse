@@ -4,3 +4,5 @@ websockets>=17.1
 numpy>=2.0
 pandas>=2.2
 scipy>=1.13
+pyarrow>=15
+matplotlib>=3.8

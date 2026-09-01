@@ -1,0 +1,141 @@
+{
+  "generated": 1788282630000,
+  "start": 1786468230000,
+  "end": 1788282630000,
+  "days": 21,
+  "min_qvol": 2000000,
+  "universe": [
+    {
+      "symbol": "BTCUSDT",
+      "qvol24h": 819144262.37
+    },
+    {
+      "symbol": "ETHUSDT",
+      "qvol24h": 502728646.99
+    },
+    {
+      "symbol": "SOLUSDT",
+      "qvol24h": 112327884.92
+    },
+    {
+      "symbol": "SPCXUSD1",
+      "qvol24h": 99267529.52
+    },
+    {
+      "symbol": "XAUUSD1",
+      "qvol24h": 87080126.25
+    },
+    {
+      "symbol": "BTRUSDT",
+      "qvol24h": 54130355.22
+    },
+    {
+      "symbol": "HYPEUSDT",
+      "qvol24h": 38135327.43
+    },
+    {
+      "symbol": "ASTERUSDT",
+      "qvol24h": 34547428.31
+    },
+    {
+      "symbol": "CLUSD1",
+      "qvol24h": 33981552.0
+    },
+    {
+      "symbol": "XRPUSDT",
+      "qvol24h": 31133025.52
+    },
+    {
+      "symbol": "SNDKUSD1",
+      "qvol24h": 17893549.12
+    },
+    {
+      "symbol": "CLUSDT",
+      "qvol24h": 17763728.03
+    },
+    {
+      "symbol": "BTCUSD1",
+      "qvol24h": 17407564.44
+    },
+    {
+      "symbol": "SNDKUSDT",
+      "qvol24h": 12401564.05
+    },
+    {
+      "symbol": "ZECUSDT",
+      "qvol24h": 12370389.79
+    },
+    {
+      "symbol": "XAUUSDT",
+      "qvol24h": 11546519.1
+    },
+    {
+      "symbol": "MUUSD1",
+      "qvol24h": 9790609.05
+    },
+    {
+      "symbol": "XAGUSDT",
+      "qvol24h": 9349765.4
+    },
+    {
+      "symbol": "DOGEUSDT",
+      "qvol24h": 8799248.16
+    },
+    {
+      "symbol": "BNBUSDT",
+      "qvol24h": 7500271.68
+    },
+    {
+      "symbol": "SKHYNIXUSDT",
+      "qvol24h": 6567403.12
+    },
+    {
+      "symbol": "SKHYNIXUSD1",
+      "qvol24h": 5984757.01
+    },
+    {
+      "symbol": "SPCXUSDT",
+      "qvol24h": 5217781.25
+    },
+    {
+      "symbol": "PONSUSDT",
+      "qvol24h": 5057756.87
+    },
+    {
+      "symbol": "ETHUSD1",
+      "qvol24h": 4869833.55
+    },
+    {
+      "symbol": "\u725b\u6765USDT",
+      "qvol24h": 4724776.01
+    },
+    {
+      "symbol": "MARSCOINUSDT",
+      "qvol24h": 3600659.78
+    },
+    {
+      "symbol": "LITUSDT",
+      "qvol24h": 3110366.73
+    },
+    {
+      "symbol": "UNIUSDT",
+      "qvol24h": 3027589.88
+    },
+    {
+      "symbol": "AKEUSDT",
+      "qvol24h": 2420858.02
+    },
+    {
+      "symbol": "SOLUSD1",
+      "qvol24h": 2405948.59
+    },
+    {
+      "symbol": "CRCLUSDT",
+      "qvol24h": 2281052.35
+    },
+    {
+      "symbol": "CASHCATUSDT",
+      "qvol24h": 2254045.42
+    }
+  ]
+}

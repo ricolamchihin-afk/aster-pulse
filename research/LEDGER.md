@@ -87,3 +87,60 @@ worse and exit is worse by the modelled half-spread on each side.
 | # | date | what | params | why |
 |---|------|------|--------|-----|
 | — | — | predeclaration only above | — | — |
+| T1 | 09-01 | Phase 1 base run, 2 hyp × 4 horizons × 3 cost scenarios = 24 cells | universe qvol>=$2M (33 sym), 21d, entry=next-bar open, LAT=1 bar | predeclared direction test |
+
+### Phase 1 result (recorded before robustness)
+
+- events = 8805 detector fires; 7392 with a usable next-bar entry price.
+- **No cell passes.** Under fees-only (optimistic 8bp): momentum mean net
+  −3.7→+4.9 bps across 30→300s, median ≈ −8 bps, hit rate 43–46%, and every
+  95% CI lower bound ≤ 0. Reversal is strongly negative (−12→−21 bps).
+- With measured p50 spread every cell is −8→−34 bps; with p90 spread −14→−40 bps.
+- Median net ≈ −(cost) everywhere ⇒ the median trade has ~zero gross directional
+  move; the signal is a coin flip minus costs. The only positive mean
+  (momentum_300s, fees-only, +4.9bps) has median −9.2bps and CI [−4.9, +16.0]
+  ⇒ fat-tail / outlier artefact, fails the deploy criterion.
+- Next: robustness (walk-forward OOS, outlier trim, liquidity tiers, time-of-day)
+  and search correction (DSR / White's) to confirm the null. Phase 2 sizing is
+  NOT entered because Phase 1 produced no direction.
+
+| T2 | 09-01 | Walk-forward IS(14d)/OOS(7d), momentum, fees-only | 4 horizons | does anything hold OOS? |
+| T3 | 09-01 | Outlier trim of momentum_300s fees-only | drop top 1/3/5/10 winners | is the +mean outlier-driven? |
+| T4 | 09-01 | Liquidity tiers (>=$20M / $5-20M / $2-5M), momentum | 60s, 300s | edge in a specific tier? |
+| T5 | 09-01 | Time-of-day buckets, momentum_300s fees-only | 4×6h UTC | hour-of-day dependence |
+| T6 | 09-01 | Look-ahead ceiling (enter at signal price, NOT tradeable) | 4 horizons, mom+rev | strict optimistic upper bound |
+
+### Robustness result (confirms null)
+
+- **Walk-forward:** no cell has CI lower bound > 0 in IS or OOS; positive means
+  carry negative medians (fat tail). 30s OOS is significantly negative.
+- **Outliers:** momentum_300s fees-only mean +4.9bps → −0.5bps after dropping
+  just the top 10 winners of 3133. Rests on a handful of outliers.
+- **Tiers:** no liquidity tier is robustly positive (all CIs span 0).
+- **Look-ahead ceiling:** entering at the signal's OWN price (impossible to
+  trade), the max gross reversion is 5.8bps (30s) — BELOW the 8bp fee floor.
+  Momentum net negative at every horizon; reversal net negative at every
+  horizon. No edge exists even before requiring an executable entry.
+- **Search correction (N=24 predeclared cells):** best cell per-trade
+  Sharpe +0.021 vs deflated benchmark SR0=0.169 ⇒ DSR=0.000 (needs >0.95).
+  White's Reality Check p=0.488 ⇒ best cell fully consistent with luck.
+
+### Total trials
+
+- 24 predeclared Phase-1 cells (2 hyp × 4 horizons × 3 cost scenarios) — the
+  set used for the DSR / White's correction.
+- Robustness slices (T2–T6): walk-forward views (8), outlier trims (5), tier
+  slices (6), time-of-day (4), look-ahead ceiling (8). These are diagnostics on
+  the SAME predeclared hypotheses; none was used to select a deployable rule,
+  because none passed. No threshold, horizon, or filter was tuned to "find" a
+  passing variant. **No variant passed the deploy criterion at any stage.**
+
+## 4. Verdict: NULL RESULT
+
+No directional rule built on the aster_pulse detector survives realistic Aster
+costs. Phase 2 (sizing) and a Phase 4 live paper-trade are not entered: there is
+no validated direction to size or to freeze. The single binding reason is the
+cost floor — the detector's post-anomaly move is a near-symmetric coin flip
+whose only systematic component (immediate reversion) is smaller than the 0.08%
+round-trip taker fee and occurs inside the untradeable gap before the first
+executable price.
