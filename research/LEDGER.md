@@ -215,3 +215,82 @@ out-of-sample FALSIFICATION test, not a deployment.
 | T11 | 09-01 | OFI-decile monotonicity of GROSS forward return | 4 horizons | core thesis: does forward return rise with OFI? |
 | T12 | 09-01 | tau thresholds {0.3,0.6} robustness | all rules/horizons | does a stronger flow filter help? |
 | T13 | 09-01 | Search correction DSR + White's on cumulative N=72 | — | honest multiple-testing correction |
+
+### Phase 1b result (recorded after running, discipline preserved)
+
+- Reused the SAME 7,392 events with a usable next-bar entry (no re-download).
+- **No cell of the 48 primary (tau=0) cells passes the deploy gate.** Under the
+  optimistic **fees-only (8bp)** scenario the best cells are `follow_flow_120s`
+  (mean +2.1bps, median −8.0, hit 46.6%, 95% CI **[−4.5, +9.5]**) and
+  `ofi_confirmed_momentum_300s` (+1.9bps, CI [−8.0, +13.3]) — every CI lower
+  bound ≤ 0. `fade_flow` is strongly negative everywhere (−14 to −18bps
+  fees-only), so trading WITH the flow is clearly "less wrong" than against it.
+- Under **measured p50 spread** every cell is −8 to −32bps; under **p90** −17 to
+  −38bps. Medians are ≈ −(cost) everywhere ⇒ the median flow-conditioned trade
+  still has ~zero gross directional move.
+- **Walk-forward (14d IS / 7d untouched OOS), `follow_flow`:** the small fees-only
+  IS means (120s +3.5) do NOT hold OOS (120s OOS +0.3, CI [−8.7, +10.9]; 30s OOS
+  significantly negative). Under measured p50 every IS and OOS cell is negative.
+- **Outliers:** `follow_flow_120s` fees-only mean +2.1 → **−1.7 after dropping the
+  top 10 winners** of 4,017; the tiny positive mean is fat-tail, not edge.
+- **Liquidity tiers:** no tier robustly positive (all CIs span 0).
+- **tau robustness (diagnostic, NOT selection):** raising the flow-magnitude
+  filter concentrates the (real) gross edge — under **fees-only**,
+  `ofi_confirmed_momentum_120s` at **tau=0.6** reaches mean +9.5bps with 95% CI
+  **[+1.3, +19.1]** (the ONLY cell with a CI lower bound > 0), and
+  `follow_flow_300s` tau=0.6 mean +8.5 CI [−2.6, +20.3]. **But these fail the
+  gate**: (a) tau≠0 is diagnostic, not the predeclared selection tau; (b) they
+  are fees-only — under measured p50 the same cell collapses to CI [−13.2, +4.3];
+  (c) n shrinks. So no deployable cell exists at measured cost.
+- **OFI-decile monotonicity (the core thesis) — POSITIVE:** mean GROSS forward
+  log-return rises ~monotonically across OFI deciles. Spearman(decile OFI, gross
+  fwd) = **+0.75 (30s), +0.78 (60s), +0.83 (120s), +0.93 (300s)**, p = 0.013 →
+  0.0002. Extreme buy-flow deciles show **+30 to +43bps GROSS at 300s**; extreme
+  sell-flow deciles are negative. So **OFI genuinely carries directional
+  information** — the anomaly is NOT direction-agnostic once you condition on
+  signed flow. The gross signal is real; it is the **8bp+ cost floor plus the
+  dilution from the noisy middle deciles at tau=0** that keeps the net rule ≤ 0.
+- **Search correction (CUMULATIVE N=72 = 24 prior + 48 OFI):** best cell by mean
+  (still the prior `momentum_300s` fees-only, +4.9bps) has per-trade Sharpe
+  +0.021 vs deflated benchmark **SR0=0.199 ⇒ DSR=0.000** (needs >0.95); White's
+  Reality Check **p=0.771** ⇒ the best of all 72 cells is fully consistent with
+  luck.
+
+### Total trials (cumulative, honest)
+
+- **Selection set: 72** = 24 prior momentum/reversal cells + 48 OFI cells
+  (4 rules × 4 horizons × 3 cost scenarios at tau=0). DSR / White's use N=72.
+- Diagnostics NOT in the selection set (never used to pick a rule): tau∈{0.3,0.6}
+  (+96 cells), walk-forward views, outlier trims, liquidity tiers, OFI deciles.
+- **No variant passed the deploy criterion at any stage.**
+
+## 8. Verdict: AUGMENTED NULL (deployment), with a real gross signal
+
+OFI is a **genuine directional predictor in GROSS terms** (monotone decile
+relationship, Spearman up to +0.93). But **no OFI-conditioned rule clears Aster's
+~8–11bp round-trip cost floor net of measured costs**, at any of the four
+predeclared rules, any horizon, in- or out-of-sample, and it fails DSR/White's on
+the cumulative trial count. Per the predeclared gate, since none passed, the
+single most-promising predeclared rule — **`follow_flow` @ 120s, tau=0** (highest
+14d in-sample fees-only mean, +3.5bps) — is LOCKED as a **CANDIDATE**, and the
+live run is explicitly an **out-of-sample FALSIFICATION test, not a deployment**
+(`research/results/locked_rule.json`). The economically strongest observation
+(`ofi_confirmed_momentum` @ tau=0.6, the only fees-only CI>0 cell) is recorded so
+the live monitor logs `ofi` and `move` on every event and both can be evaluated
+offline. Phase 2 Kelly sizing is NOT entered (no gate pass); the live trader uses
+a fixed $500 notional for clean per-trade measurement, with circuit breakers.
+
+## 9. Live paper-trading log (Part B)
+
+- Engine: `research/paper_trader.py`, tmux session `paper-trader`, tee
+  `/tmp/paper_trader.log`, decisions+fills appended to
+  `research/data/paper_trades.jsonl`.
+- Reconstructs the detector live on the 30s grid (imports `beta`,
+  `residual_stats`, `zscore`, `flagged`, `burst` and all constants from
+  `aster_pulse`), restricted to the 33-symbol universe + BTCUSDT beta reference.
+- On each `flagged` event it REST-queries `aggTrades` for the just-closed 30s bar,
+  computes OFI (m=true ⇒ seller aggressor), applies `follow_flow`, and simulates a
+  taker fill on the REAL live book (LONG@ask / SHORT@bid), marking out 120s later
+  (LONG@bid / SHORT@ask). Net = directional log return − 8bp fee; the crossed
+  spread is paid, not double-counted (recorded as `spread_bps`).
+- Live monitoring results appended below after the ~20-min warmup completes.
