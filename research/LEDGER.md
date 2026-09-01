@@ -135,7 +135,7 @@ worse and exit is worse by the modelled half-spread on each side.
   because none passed. No threshold, horizon, or filter was tuned to "find" a
   passing variant. **No variant passed the deploy criterion at any stage.**
 
-## 4. Verdict: NULL RESULT
+## 4. Verdict: NULL RESULT (Phase 1, momentum/reversal)
 
 No directional rule built on the aster_pulse detector survives realistic Aster
 costs. Phase 2 (sizing) and a Phase 4 live paper-trade are not entered: there is
@@ -144,3 +144,74 @@ cost floor — the detector's post-anomaly move is a near-symmetric coin flip
 whose only systematic component (immediate reversion) is smaller than the 0.08%
 round-trip taker fee and occurs inside the untradeable gap before the first
 executable price.
+
+---
+
+# Phase 1b — OFI-conditioned direction (expanded thesis)
+
+## 5. Predeclarations (written 2026-09-01 BEFORE viewing any OFI-conditional forward returns)
+
+The unsigned anomaly sign carries no tradeable direction (established NULL, §2–4).
+New economic hypothesis: an anomaly driven by **net aggressive buying** tends to
+continue up; one driven by **net aggressive selling** tends to continue down. The
+direction predictor is `sign(ofi)` on the signal bar, where
+`ofi = (buy_aggressor_qvol − sell_aggressor_qvol)/total_qvol` on the just-closed
+30s signal bar. `ofi` is known at signal time (computed from the signal bar's own
+aggTrades, no forward leakage) and is already stored per event in
+`research/data/events.parquet` / `research/data/forward.parquet`.
+
+### Four mutually-exclusive predeclared rules
+
+- **follow_flow**: `ofi>0 → LONG`, `ofi<0 → SHORT` (trade with the flow).
+- **fade_flow**: `ofi>0 → SHORT`, `ofi<0 → LONG` (trade against the flow).
+- **ofi_confirmed_momentum**: take the move direction (`sign(move)`) **only when**
+  `sign(move)==sign(ofi)`; otherwise no trade (flat).
+- **ofi_divergence_reversal**: fade the move (`−sign(move)`) **only when**
+  `sign(move)!=sign(ofi)`; otherwise no trade (flat).
+
+### Parameters (fixed before results)
+
+- Primary OFI magnitude threshold **tau = 0** (pure sign). `tau ∈ {0.3, 0.6}`
+  reported as ROBUSTNESS ONLY, never used for rule selection.
+- Horizons: **30 / 60 / 120 / 300 s**.
+- Entry = **next-bar open** (`open[k+1]`), never the signal price. Exit `H` s later.
+- Costs: **fees_only (8bp)**, **measured p50 spread**, **measured p90 spread**
+  (from `research/spread_model.py`, live recorder).
+- Null H0: **net expectancy ≤ 0**.
+
+### Deploy gate (predeclared)
+
+A rule PASSES only if, at some horizon: (i) day-cluster-bootstrap 95% CI lower
+bound > 0 net of MEASURED cost, AND (ii) holds in an untouched 7d out-of-sample,
+AND (iii) survives DSR > 0.95 and White's Reality Check on the CUMULATIVE trial
+count, AND (iv) survives 1.5–2× measured costs. If a rule passes: LOCK it. If
+none passes: LOCK the single most-promising predeclared rule (highest in-sample
+mean net at its best horizon) as a CANDIDATE, and label the live run an
+out-of-sample FALSIFICATION test, not a deployment.
+
+## 6. Cumulative trial count (declared before results)
+
+- Prior Phase 1 (§3): **24** predeclared momentum/reversal cells
+  (2 hyp × 4 horizons × 3 cost scenarios).
+- New Phase 1b PRIMARY set: **48** cells (4 rules × 4 horizons × 3 cost scenarios)
+  at tau=0. This is the selection set.
+- **Cumulative selection trials = 24 + 48 = 72.** DSR / White's Reality Check are
+  computed on this honest cumulative N.
+- tau robustness variants (tau ∈ {0.3,0.6}: +96 diagnostic cells) and other
+  robustness slices (walk-forward, outlier trims, liquidity tiers, OFI deciles)
+  are DIAGNOSTICS on the same predeclared rules; none is used to select a
+  deployable rule. They are logged in §7 for full honesty but excluded from the
+  selection-set correction (they would only inflate N and make passing harder,
+  never easier).
+
+## 7. Phase 1b trials log
+
+| # | date | what | params | why |
+|---|------|------|--------|-----|
+| T7 | 09-01 | Phase 1b base run, 4 OFI rules × 4 horizons × 3 cost scenarios = 48 cells | tau=0, entry=next-bar open, LAT=1 bar, 33 sym, 21d | predeclared OFI direction test |
+| T8 | 09-01 | Walk-forward IS(14d)/untouched-OOS(7d) on best OFI rule/horizon | fees-only + measured | does it hold OOS? |
+| T9 | 09-01 | Outlier trim of best OFI cell | drop top 1/3/5/10 winners | is any +mean outlier-driven? |
+| T10 | 09-01 | Liquidity tiers (>=$20M / $5-20M / $2-5M) on best OFI rule | 60s, 300s | edge in a specific tier? |
+| T11 | 09-01 | OFI-decile monotonicity of GROSS forward return | 4 horizons | core thesis: does forward return rise with OFI? |
+| T12 | 09-01 | tau thresholds {0.3,0.6} robustness | all rules/horizons | does a stronger flow filter help? |
+| T13 | 09-01 | Search correction DSR + White's on cumulative N=72 | — | honest multiple-testing correction |
