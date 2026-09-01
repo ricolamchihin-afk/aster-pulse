@@ -5,3 +5,7 @@ __pycache__/
 logs/
 *.log
 .env
+
+# research: raw downloaded data is bulky and reproducible; keep code + results
+research/data/bars/
+research/data/spread_samples.jsonl
