@@ -164,8 +164,12 @@ horizons 30/60/120/300s, costs fees-only / measured p50 / p90. Null H0: net ≤ 
 | cost scenario | best cell | mean | median | hit | 95% CI | verdict |
 |---|---|---|---|---|---|---|
 | fees only (8bp) | follow_flow_120s | +2.1 | −8.0 | 47% | [−4.5, +9.5] | no edge |
-| + measured p50 | ofi_confirmed_momentum_300s | −11.6 | −21.0 | 42% | [−21.2, −0.5] | no edge |
-| + measured p90 | ofi_confirmed_momentum_300s | −17.2 | −25.2 | 41% | [−26.8, −6.3] | no edge |
+| + measured p50 | ofi_confirmed_momentum_300s | −11.1 | −20.7 | 42% | [−20.8, −0.0] | no edge |
+| + measured p90 | ofi_confirmed_momentum_300s | −16.9 | −25.2 | 41% | [−26.5, −6.0] | no edge |
+
+_(Measured-spread cells drift ≈0.5 bps as the live recorder appends; fees-only,
+decile, and DSR/White's numbers are spread-independent and stable. No drift
+changes any verdict — every measured-cost CI stays ≤ 0.)_
 
 - **No cell (of 48) has a 95% CI lower bound above zero net of measured cost.**
   `fade_flow` is strongly negative everywhere (−14 to −38bps) → trading WITH the
@@ -222,9 +226,35 @@ as the detector (`!markPrice@arr@1s/!bookTicker/!ticker@arr`), restricted to the
   `research/data/paper_trades.jsonl` (resumes across restarts). No live order is
   ever placed.
 
-## 12. Live monitoring results
+## 12. Live monitoring results (falsification, ongoing)
 
-_Populated after the ~20-min warmup and initial live events (anomalies are rare)._
+The paper trader warmed up cleanly (`based=33/33` after ~20 min, the detector's
+`MIN_BASE=40` non-overlapping 30s returns) and then scored the live feed. In the
+first ~40 min of live scoring it produced **18 detector events, 17 entered, 17
+closed** (the trader is **left running** for continued accumulation; anomalies are
+rare, ~17/hr across the universe):
+
+| metric | live (17 closed) | backtest predicted |
+|---|---|---|
+| mean net / trade | **−21.4 bps** | +2.1 (fees-only) / −12.1 (measured p50) |
+| median net / trade | −44.6 bps | −8.0 / −19.6 |
+| hit rate | 35% | 47% / 41% |
+| cum P&L on $10k | **−$18.15** | — |
+| median spread PAID at entry | **19.3 bps** (range 0.9–29.9) | (universe-wide p50 modelled) |
+
+- **The live falsification corroborates the augmented NULL**, and is *harsher*
+  than the backtest: the detector fires almost entirely on the widest-spread
+  low-caps (`CASHCATUSDT`, `PONSUSDT`, `MARSCOINUSDT`, `牛来USDT`), where the
+  spread genuinely paid at entry (median **19.3 bps**) dwarfs any directional edge.
+  Per-trade net is wildly fat-tailed (+244 to −184 bps); the one tight-spread fill
+  (PONS at 0.9bp) came out at −1.6 bps — essentially just the 8bp fee.
+- This is the value of the live model: it pays the *real* spread on the *actual*
+  names the detector flags, exposing that the tradeable universe for these
+  anomalies is exactly the illiquid tail the cost floor rules out.
+- Verdict unchanged: **candidate `follow_flow` is being falsified live, not
+  deployed.** No live order was placed; fills are simulated against real quotes.
+  Per-trade decisions and fills persist to `data/paper_trades.jsonl`; a formatted
+  session snapshot is in `/opt/cursor/artifacts/live_paper_trading_results.log`.
 
 ## Bottom line
 

@@ -293,4 +293,20 @@ a fixed $500 notional for clean per-trade measurement, with circuit breakers.
   taker fill on the REAL live book (LONG@ask / SHORT@bid), marking out 120s later
   (LONG@bid / SHORT@ask). Net = directional log return − 8bp fee; the crossed
   spread is paid, not double-counted (recorded as `spread_bps`).
-- Live monitoring results appended below after the ~20-min warmup completes.
+### Live monitoring result (first ~40 min of live scoring; trader left running)
+
+- Warmup completed cleanly: `based=33/33` after ~20 min (MIN_BASE=40 × 30s).
+- **18 detector events, 17 entered, 17 closed.** One event had no aggTrades for
+  its bar (OFI undefined) and was correctly skipped (`side=none`).
+- Sides: 14 LONG / 3 SHORT (follow_flow tracks flow, not the move — e.g. PONS
+  move=+0.51% but ofi=−0.98 → SHORT; 牛来 move=−1.17% ofi=+0.72 → LONG).
+- **mean net −21.4 bps, median −44.6 bps, hit 35%, cum P&L −$18.15 on $10k.**
+  Per-trade net is wildly fat-tailed (+244 to −184 bps). Median spread PAID at
+  entry = **19.3 bps** (range 0.9–29.9) — the detector fires almost only on the
+  widest-spread low-caps, so live realized cost exceeds the universe-wide backtest
+  cost, and the live mean (−21.4) is below the measured-p50 backtest prediction
+  (−12.1) and far below the optimistic fees-only (+2.1).
+- The one tight-spread fill (PONS @ 0.9bp) closed at −1.6 bps ≈ just the 8bp fee.
+- **Live falsification corroborates the augmented NULL.** No live order placed;
+  fills simulated against real live quotes. Trader remains running in tmux
+  `paper-trader`; log `/tmp/paper_trader.log`; data `data/paper_trades.jsonl`.
