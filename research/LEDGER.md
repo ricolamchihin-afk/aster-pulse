@@ -437,3 +437,18 @@ a maker and you stand down on an accelerating runner.**
 | # | date | what | params | why |
 |---|------|------|--------|-----|
 | T16 | 09-02 | Maker + liquid book + |OFI|≥0.6 follow_flow | 15 names, 60/120/300s, unfilled=0 | revised thesis |
+
+### Phase 1e result
+
+- 171,218 signals on the 15 liquid books; 72,336 fills (42.2% fill rate).
+  Runner veto never fired (0) — these names do not print +40% days.
+- **PRIMARY fails the gate at every horizon.** Unfilled=0, 0% maker fee:
+  60s mean −0.04bps CI [−0.08, −0.00]; 120s 0.00 [−0.05, +0.05]; 300s
+  +0.02 [−0.11, +0.14]. Medians are 0. Untouched OOS is also ~0.
+- Filled-only (no missed-fill credit) is still ~0 to −0.1bps.
+- Exit-as-taker diagnostic: −1.65bps (the 4bp fee on the filled half).
+- Corrected adverse-selection entry: −2.5 to −2.7bps (CI entirely below 0).
+- Interpretation: the earlier OFI-decile result was **conditional on detector
+  anomalies in meme names**. Unconditional |OFI|≥0.6 on tight books is
+  30s microstructure noise, not a tradeable continuation. Revised thesis
+  does not pass. Not a candidate. Cumulative N = 96.

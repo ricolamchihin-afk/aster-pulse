@@ -279,6 +279,61 @@ but those CIs include 0 and fade_flow was **not** reopened as a candidate.
 
 The live paper-trader stays locked at 120s. Do not retune it from this test.
 
+## 14. +60% 24h runner fade — was this tested?
+
+**Not before this run.** Phases 1–1c used 30-second detector flags. The word
+"24h" in the detector is quote **volume**, not a +60% daily price change.
+
+The claim: names that have already printed **+60% over 24 hours** usually get a
+decent reversion, so fade them (SHORT).
+
+- **Right now on Aster:** 0 perps are ≥ +60% on the 24h ticker (largest: UAI
+  +43.6%, AI +41.7%, MARSCOIN +38.7%).
+- **In the 21-day history** of the 33 liquid names: 258 such crossings, but only
+  6 symbols (牛来, PONS, AKE, CASHCAT, BTR, MARSCOIN). After dropping overlapping
+  holds: **61 independent 1h trades, 28 at 4h**. 12h/24h samples are too small
+  to score (n<20) — stopped, no substitution of a lower threshold.
+
+| hold | n | fees-only mean / median / hit | 95% CI | verdict |
+|---|---|---|---|---|
+| 1h | 61 | −36.9 / **+3.7** / 53% | [−266, +168] | no edge |
+| 4h | 28 | −162 / −94 / 43% | [−1045, +597] | no edge |
+
+The intuition is half-right: the **median** 1h fade is a few basis points of
+reversion — not a "decent" move, and not enough to pay the 8bp fee plus the
+~19bp live spread these names actually quote. The **mean** is badly negative
+because a subset of +60% runners **keep going**; shorting them is how you get
+run over. Fat tails make the CI uselessly wide. This is not a candidate.
+
+## 15. Revised thesis run (Phase 1e) — maker + liquid book + extreme OFI
+
+Predeclared before viewing forwards (LEDGER §12). Universe frozen to 15
+tight-spread names we already have bars for (BTC/ETH/SOL and other books with
+p50 ≤ 5bp and top ≥ $2k). Signal = |OFI| ≥ 0.6 on any 30s bar — **no detector**.
+Follow flow; stand down if 24h ≥ +40% and ofi > 0. Maker fill in the next 30s
+only if ≥ $500 of opposite aggressive volume; otherwise cancel and count as 0.
+Aster maker fee = 0%. Holds 60 / 120 / 300s. Gate: CI lower bound > 0 after
+missed-fill, and in the untouched week.
+
+| cell | n | mean | median | 95% CI | OOS mean | verdict |
+|---|---|---|---|---|---|---|
+| maker 60s | 78780 | −0.04 | 0 | [−0.08, −0.00] | +0.01 | no edge |
+| maker 120s | 59860 | 0.00 | 0 | [−0.05, +0.05] | +0.02 | no edge |
+| maker 300s | 36014 | +0.02 | 0 | [−0.11, +0.14] | +0.09 | no edge |
+
+**The revised thesis does not pass.** 171k signals, 42% fill, essentially
+zero mean even with **no fee**. Filled-only is still ~0. Forcing a taker exit
+is −1.65bps. Getting picked off (adverse entry) is −2.5bps.
+
+What this means: the earlier “OFI is real” result was **conditional on the
+detector firing in wide-spread meme names**. On the books you would actually
+want to make a market in, |OFI| ≥ 0.6 every 30s is mostly noise — it fires
+thousands of times per name per week. Removing the cost floor does not reveal
+a hidden edge. OFI remains a forecasting curiosity on the anomaly tail, not a
+$10k maker rule on liquid Aster perps.
+
+Live paper-trader is unchanged (old 120s taker candidate). No new deployment.
+
 ## Bottom line
 
 On real Aster data, over 21 days and 33 liquid perps, the `aster_pulse`
@@ -289,5 +344,6 @@ out-of-sample. Conditioning on **order-flow imbalance** reveals a *real* gross
 signal (monotone in OFI, Spearman up to +0.93), but it is **eaten by the cost
 floor** and does not grow with hold time. The most-promising rule
 (`follow_flow` @ 120s) is locked as a candidate and is being **falsified live**,
-not deployed. **The rule remains unreachable at these costs; the signal is
-real, the edge is not.**
+not deployed. Moving the same OFI idea onto **tight books with maker fills**
+(Phase 1e) also fails: 171k signals, 0-fee mean ≈ 0 bps. The OFI pattern does
+not survive once you leave the untradeable tail. **No rule passed the gate.**
