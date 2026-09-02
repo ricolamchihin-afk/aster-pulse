@@ -383,3 +383,57 @@ is quote *volume*, not price change).
 | # | date | what | params | why |
 |---|------|------|--------|-----|
 | T15 | 09-02 | Fade +60% 24h runners | SHORT, 1h/4h/12h/24h, +funding | has the "decent reversion after a +60% day" thesis been tested? |
+
+### Phase 1d result
+
+- **This thesis had not been tested before this run.**
+- Live tape at test time: **0** names with 24h pct ≥ +60% (top was UAI +43.6%).
+- Historical 21d / 33 names: 258 +60% crossings (6 symbols, almost all meme:
+  牛来 94, PONS 68, AKE 51, CASHCAT 24, BTR 14, MARSCOIN 7). 230 with an entry.
+- After the independence mask: n=61 at 1h, n=28 at 4h; **12h/24h n<20 → stop**.
+- SHORT after +60% does **not** show a decent, tradeable reversion:
+  1h fees-only mean **−36.9bps**, median +3.7bps, hit 52.5%, CI [−266, +168].
+  4h fees-only mean **−162bps**, median −94bps. The median 1h fade is a few
+  bps — not "decent" — and the mean is wrecked by runners that **keep going**.
+- No cell has CI lower bound > 0. Not a candidate. Cumulative N = 93 if
+  counted; the 12h/24h cells were not evaluated (insufficient n).
+
+# Phase 1e — Revised thesis (predeclared 2026-09-02 BEFORE viewing forwards)
+
+The detector-as-trigger + taker stack is falsified. Revised claim: **on tight
+books, extreme signed flow predicts the next 1–5 minutes, but only if you are
+a maker and you stand down on an accelerating runner.**
+
+## 12. Predeclarations
+
+- **Universe (frozen from live recorder at predeclaration):** perps with
+  p50 spread ≤ 5 bp AND top-of-book p50 ≥ $2,000, intersected with symbols
+  that already have 21d bars. That list is:
+  `BTCUSDT, ETHUSDT, BTCUSD1, XAUUSD1, ETHUSD1, SOLUSDT, CLUSDT, CLUSD1,
+  ASTERUSDT, XAGUSDT, SNDKUSD1, SOLUSD1, SPCXUSD1, MUUSD1, SKHYNIXUSD1`
+  (15 names). No download of extra symbols. No meme names.
+- **Event:** every 30s bar with |OFI| ≥ 0.6. **No** z-score / MIN_MOVE /
+  detector flag. OFI = (buyvq − sellvq)/vq on that bar.
+- **Side:** follow_flow (ofi>0→LONG, ofi<0→SHORT).
+- **Runner veto:** if trailing 24h simple return ≥ +40% **and** ofi > 0,
+  **stand down** (no trade). Do not chase an accelerating runner. If 24h ≥ 40%
+  and ofi < 0, SHORT is allowed (flow flipped).
+- **Execution (maker only):** after the signal bar k, rest during bar k+1
+  (30s). LONG fills only if sell-aggressor quote vol in k+1 ≥ $500; SHORT
+  fills only if buy-aggressor quote vol in k+1 ≥ $500. Else **cancel**.
+  Unfilled signals count as **0** in the primary mean (missed-fill bias).
+  Entry price = close of the fill bar (trade-price proxy; no spread paid).
+  Maker fee = **0%** (Aster perps, fee schedule as of Feb 2026).
+- **Hold:** 60 / 120 / 300 s from the fill bar. Primary exit assumes maker
+  (0 fee). Diagnostic only: exit as taker (4 bp).
+- **Adverse-selection diagnostic (not selection):** long entry at fill-bar
+  low, short entry at fill-bar high.
+- **Walk-forward:** same 14d IS / 7d untouched OOS. Touch OOS once.
+- **Gate:** primary (0 fee, unfilled=0) 95% CI lower bound > 0 at some
+  horizon, **and** holds in untouched OOS. New selection cells = **3**.
+  Cumulative N = 93 + 3 = **96**.
+- Live paper-trader stays on the old 120s taker candidate. Do not retune it.
+
+| # | date | what | params | why |
+|---|------|------|--------|-----|
+| T16 | 09-02 | Maker + liquid book + |OFI|≥0.6 follow_flow | 15 names, 60/120/300s, unfilled=0 | revised thesis |
