@@ -356,3 +356,30 @@ re-search of short horizons.
   (+6 / +8bps fees-only) but CIs include 0. That is consistent with later
   mean-reversion, **not** a reason to reopen fade_flow as a selection rule.
 - Cumulative selection N stays **81**. Live paper-trader remains locked at 120s.
+
+# Phase 1d — +60% 24h runner fade (predeclared 2026-09-02 BEFORE viewing forwards)
+
+This is a **different event** from the 30s detector. The claim: names that have
+already printed **+60% or more over the trailing 24 hours** are typically
+followed by a decent reversion, so the trade is SHORT. That thesis was not
+tested in Phases 1–1c (those used 30s z-score flags, and "24h" in the detector
+is quote *volume*, not price change).
+
+## 11. Predeclarations
+
+- **Event:** trailing 24h simple return `close[t]/close[t-24h] − 1` first
+  crosses ≥ **+60%** from below (one fire per excursion; no re-fire until the
+  24h return drops back under 60%).
+- **Direction:** SHORT only (fade the runner). LONG is not a candidate.
+- **Entry:** next 30s bar open after the cross. Exit at 1h / 4h / 12h / 24h.
+- **Costs:** 8bp fee + measured p50/p90 spread + funding prints inside the hold.
+- **Universe:** the same 33 liquid perps we already have 21d bars for. If the
+  independent-event count at +60% is too small to estimate a mean (n < 20),
+  **stop and say so** — do not silently switch to +20%/+40% as the selection
+  rule. Those lower thresholds may be reported only as sample-size diagnostics.
+- **Null / gate:** same as §5. New selection cells = 4 horizons × 3 costs = **12**.
+  Cumulative N = 81 + 12 = **93** if the +60% sample is large enough to evaluate.
+
+| # | date | what | params | why |
+|---|------|------|--------|-----|
+| T15 | 09-02 | Fade +60% 24h runners | SHORT, 1h/4h/12h/24h, +funding | has the "decent reversion after a +60% day" thesis been tested? |
