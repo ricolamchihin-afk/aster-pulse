@@ -310,3 +310,34 @@ a fixed $500 notional for clean per-trade measurement, with circuit breakers.
 - **Live falsification corroborates the augmented NULL.** No live order placed;
   fills simulated against real live quotes. Trader remains running in tmux
   `paper-trader`; log `/tmp/paper_trader.log`; data `data/paper_trades.jsonl`.
+
+# Phase 1c — Longer holding periods (predeclared 2026-09-02 BEFORE viewing returns)
+
+The 30/60/120/300s set is a meme-style scalp window. The fee floor is **fixed
+per round trip**, so a larger move over minutes-to-hours could theoretically
+clear the same 8–11bp cost. This is a different economic question, not a
+re-search of short horizons.
+
+## 10. Predeclarations (written before computing any 15m/1h/4h return)
+
+- **Direction is locked:** only `follow_flow` (ofi>0→LONG, ofi<0→SHORT) at
+  tau=0. Do not re-open fade_flow / confirmed-momentum / divergence as
+  selection candidates. fade_flow is reported as a one-line sanity check
+  (should stay negative if the thesis is continuation).
+- **New horizons:** 15 minutes (900s), 1 hour (3600s), 4 hours (14400s).
+  300s is restated as a baseline already known, not a new trial.
+- **Entry/exit unchanged:** next-bar open after the signal; exit at the open
+  `H` seconds later. Independent-event mask uses the longer window (adjacent
+  4h holds on the same symbol are not independent).
+- **Costs:** fees_only (8bp), measured p50, measured p90, PLUS any **funding**
+  timestamp that falls strictly inside (entry, exit]. Long pays the funding
+  rate; short receives it. Aster funding is typically 8-hourly, so 15m/1h
+  usually pay 0 and 4h pays 0 or 1 print.
+- **Walk-forward:** same 14d IS / 7d untouched OOS as Phase 1b. Touch OOS once.
+- **Null / gate:** same as §5. New selection cells = 3 horizons × 3 cost
+  scenarios = **9**. Cumulative selection N = 72 + 9 = **81**.
+- The live paper-trader stays locked at 120s. Do not retune it mid-falsification.
+
+| # | date | what | params | why |
+|---|------|------|--------|-----|
+| T14 | 09-02 | Longer-hold follow_flow at 15m / 1h / 4h | tau=0, +funding, 3 cost scenarios = 9 cells | does a swing hold clear the fixed fee? |
