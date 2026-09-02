@@ -256,16 +256,38 @@ rare, ~17/hr across the universe):
   Per-trade decisions and fills persist to `data/paper_trades.jsonl`; a formatted
   session snapshot is in `/opt/cursor/artifacts/live_paper_trading_results.log`.
 
+## 13. Longer holding periods (Phase 1c) — 15m / 1h / 4h
+
+This is not a meme-scalp question. The 8bp fee is **fixed per round trip**, so a
+larger swing over minutes-to-hours could in principle clear it. Direction stayed
+locked on `follow_flow` (tau=0); only three new horizons were predeclared
+(LEDGER §10). Funding prints that fall inside the hold are included (5,260
+historical prints). New selection cells = 9; cumulative N = 81.
+
+| horizon | n (indep.) | fees-only mean / median / CI | measured p50 mean / CI | OOS fees-only | verdict |
+|---|---|---|---|---|---|
+| 15m | 2178 | +3.1 / −10.0 / [−14.3, +20.2] | −9.3 / [−26.7, +7.8] | −6.2 | no edge |
+| 1h | 1272 | −22.1 / −30.1 / [−53.6, +9.2] | −33.1 / [−65.0, −1.7] | −40.6 | no edge |
+| 4h | 621 | −24.0 / −58.0 / [−81.6, +37.6] | −33.6 / [−91.6, +28.2] | −74.5 | no edge |
+
+**Holding longer does not help.** The small 15m fees-only mean fails the CI and
+fails the untouched week. At 1h and 4h, `follow_flow` is significantly negative
+out-of-sample — the continuation, if any, is gone within minutes and then the
+position sits in residual noise plus cost. fade_flow (sanity only) flips to a
+slightly positive mean at 1h/4h, which is consistent with later mean-reversion,
+but those CIs include 0 and fade_flow was **not** reopened as a candidate.
+
+The live paper-trader stays locked at 120s. Do not retune it from this test.
+
 ## Bottom line
 
 On real Aster data, over 21 days and 33 liquid perps, the `aster_pulse`
 detector's anomalies are **not** followed by a directional move large enough to
 overcome Aster's 0.08% round-trip taker fee — under any predeclared direction,
-any horizon, any liquidity tier, in- or out-of-sample, and even at an
-untradeable signal-price entry. Conditioning the direction on **order-flow
-imbalance** reveals a *real* gross predictive signal (monotone in OFI, Spearman
-up to +0.93), but it too is **eaten by the cost floor**: no OFI rule clears
-measured costs, survives the untouched OOS, or passes DSR/White's on 72
-cumulative trials. The most-promising rule (`follow_flow` @ 120s) is locked as a
-candidate and is being **falsified live**, not deployed. **The rule remains
-unreachable at these costs; the signal is real, the edge is not.**
+any short *or* swing horizon (30s through 4h), any liquidity tier, in- or
+out-of-sample. Conditioning on **order-flow imbalance** reveals a *real* gross
+signal (monotone in OFI, Spearman up to +0.93), but it is **eaten by the cost
+floor** and does not grow with hold time. The most-promising rule
+(`follow_flow` @ 120s) is locked as a candidate and is being **falsified live**,
+not deployed. **The rule remains unreachable at these costs; the signal is
+real, the edge is not.**

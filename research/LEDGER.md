@@ -341,3 +341,18 @@ re-search of short horizons.
 | # | date | what | params | why |
 |---|------|------|--------|-----|
 | T14 | 09-02 | Longer-hold follow_flow at 15m / 1h / 4h | tau=0, +funding, 3 cost scenarios = 9 cells | does a swing hold clear the fixed fee? |
+
+### Phase 1c result (recorded after the run)
+
+- **No cell of the 9 passes.** Holding longer does not clear the fee; it makes
+  `follow_flow` worse.
+- 15m fees-only: mean +3.1bps, median −10.0, hit 48%, CI [−14.3, +20.2], n=2178.
+  Untouched OOS: −6.2bps (CI [−20.0, +7.6]).
+- 1h fees-only: mean −22.1bps, median −30.1, OOS −40.6bps (CI excludes 0).
+- 4h fees-only: mean −24.0bps, median −58.0, OOS −74.5bps (CI excludes 0).
+- Measured-spread cells are more negative still. Independent n drops as required
+  (4h: 621 independent events).
+- fade_flow sanity (not a candidate): mean flips slightly positive at 1h/4h
+  (+6 / +8bps fees-only) but CIs include 0. That is consistent with later
+  mean-reversion, **not** a reason to reopen fade_flow as a selection rule.
+- Cumulative selection N stays **81**. Live paper-trader remains locked at 120s.
